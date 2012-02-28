@@ -12,8 +12,26 @@ var express = require('express')
 
 app = module.exports = express.createServer();
 
+// Custom middleware to save unparsed POST request body to req.post_body
+bodySetter = function(req, res, next) {
+    if (req._post_body) return next();
+    req.post_body = req.post_body || "";
+
+    if ('POST' != req.method) return next();
+
+    req._post_body = true;
+
+    req.setEncoding('utf8');
+    req.on('data', function(chunk) {
+      req.post_body += chunk;
+    });
+
+    next();
+}
+
 
 app.configure(function(){
+  app.use(bodySetter);
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
