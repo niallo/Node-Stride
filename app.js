@@ -4,6 +4,7 @@
  */
 
 var express = require('express')
+  , exec = require('child_process').exec
   , config = require('./config')
   , crypto = require('crypto')
   ;
@@ -67,7 +68,7 @@ function verify_webhook_req(req, callback)
 
   var payload = JSON.parse(req.body.payload);
 
-  callback(verify_webhook_sig(sig, config.repo_secret, req.post_body));
+  callback(verify_webhook_sig(sig, config.webhook_secret, req.post_body));
 }
 
 
@@ -89,10 +90,41 @@ app.configure('production', function(){
 
 // handlers
 
+
+//
+// Simple mehanism to guard against concurrent, overlapping deploys.
+//
+// If a deploy is in progress when a valid webhook comes in,
+// that webhook will simply be ignored.
+//
+var exec_lock = false;
+
 app.post('/webhook', function(req, res) {
-  console.log("params payload: %s", req.params.payload);
-  console.log("body payload: %s", req.body.payload);
-  res.end();
+  console.log("Received a webhook");
+  verify_webhook_req(req, function(webhook_ok) {
+    if (!webhook_ok) {
+      console.log("Bad webhook signature");
+      res.statusCode(400);
+      res.end("Bad signature");
+      return;
+    }
+    console.log("Good webhook signature. Launching command.");
+    if (!exec_lock) {
+      // Take the lock
+      exec_lock = true;
+      exec(config.deploy_cmd, function(error, stdout, stderr) {
+        if (error !== null) {
+          console.log("Error executing deploy command `%s`: %s", config.deploy_cmd, error);
+        } else {
+          console.log(stdout + stderr);
+        }
+        // Done - yield the lock
+        exec_lock = false;
+      });
+    });
+
+    res.end();
+  });
 });
 
 app.listen(config.server_port);
