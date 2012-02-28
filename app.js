@@ -29,6 +29,47 @@ bodySetter = function(req, res, next) {
     next();
 }
 
+/*
+ * verify_webhook_sig()
+ *
+ * Verify HMAC-SHA1 signatures.
+ *
+ * <sig> Signature.
+ * <secret> Shared secret, the HMAC-SHA1 was supposedly generated with this.
+ * <body> The message body to sign.
+ */
+function verify_webhook_sig(sig, secret, body)
+{
+  var hmac = crypto.createHmac('sha1', secret);
+  hmac.update(body);
+  var digest = hmac.digest('hex');
+  return sig == digest;
+}
+
+/*
+ * verify_webhook_req()
+ *
+ * Verify the X-Hub-Signature HMAC-SHA1 header used by Strider webhooks.
+ *
+ * <req> Express request object.
+ * <callback> function(boolean result)
+ */
+function verify_webhook_req(req, callback)
+{
+  var sig;
+  if ((sig = req.headers['x-hub-signature']) === undefined) {
+    callback(false);
+  }
+  if (req.body["payload"] === undefined) {
+    callback(false);
+  }
+  sig = sig.replace('sha1=','');
+
+  var payload = JSON.parse(req.body.payload);
+
+  callback(verify_webhook_sig(sig, config.repo_secret, req.post_body));
+}
+
 
 app.configure(function(){
   app.use(bodySetter);
