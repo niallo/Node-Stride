@@ -104,7 +104,7 @@ app.post('/webhook', function(req, res) {
   verify_webhook_req(req, function(webhook_ok) {
     if (!webhook_ok) {
       console.log("Bad webhook signature");
-      res.statusCode(400);
+      res.statusCode = 400;
       res.end("Bad signature");
       return;
     }
@@ -121,7 +121,7 @@ app.post('/webhook', function(req, res) {
         // Done - yield the lock
         exec_lock = false;
       });
-    });
+    }
 
     res.end();
   });
