@@ -18,7 +18,7 @@ CONFIGURATION
 
 You will certainly wish to change most if not all configuration parameters in config.js:
 
-<webhook_secret> - This is the shared secret used to verify the Strider web hook HMAC-SHA1 signature.
+<webhook_secret> - This is the shared secret used to verify the Strider webhook's HMAC-SHA1 signature.
 
 <server_port> - Port to listen on.
 
