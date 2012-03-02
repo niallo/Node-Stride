@@ -99,7 +99,7 @@ app.configure('production', function(){
 //
 var exec_lock = false;
 
-app.post('/webhook', function(req, res) {
+app.post(config.path, function(req, res) {
   console.log("Received a webhook");
   verify_webhook_req(req, function(webhook_ok) {
     if (!webhook_ok) {
