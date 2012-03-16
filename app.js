@@ -137,7 +137,7 @@ app.post(config.path, function(req, res) {
       exec_lock = true;
       exec(config.deploy_cmd, function(error, stdout, stderr) {
         if (error !== null) {
-          log("Error executing deploy command `"+ config.deploy_cmd + "`: : + error);
+          log("Error executing deploy command `"+ config.deploy_cmd + "`: " + error);
         } else {
           log("Successfully executed deploy command. Output: "+ stdout + stderr);
         }
