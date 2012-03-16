@@ -75,9 +75,11 @@ function verify_webhook_req(req, callback)
   var sig;
   if ((sig = req.headers['x-hub-signature']) === undefined) {
     callback(false);
+    return;
   }
   if (req.body["payload"] === undefined) {
     callback(false);
+    return;
   }
   sig = sig.replace('sha1=','');
 
@@ -102,11 +104,11 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
-function log(/*var args*/) {
-    console.log(arguments);
-    if (loggly !== undefined) {
-      loggly.log(arguments);
-    }
+function log(msg) {
+  console.log(msg);
+  if (loggly !== undefined) {
+    loggly.log(msg);
+  }
 }
 
 // handlers
@@ -129,15 +131,15 @@ app.post(config.path, function(req, res) {
       res.end("Bad signature");
       return;
     }
-    log("Good webhook signature. Launching command `%s`.", config.deploy_cmd);
+    log("Good webhook signature. Launching command: " + config.deploy_cmd);
     if (!exec_lock) {
       // Take the lock
       exec_lock = true;
       exec(config.deploy_cmd, function(error, stdout, stderr) {
         if (error !== null) {
-          log("Error executing deploy command `%s`: %s", config.deploy_cmd, error);
+          log("Error executing deploy command `"+ config.deploy_cmd + "`: : + error);
         } else {
-          log("Successfully executed deploy command. Output: %s", stdout + stderr);
+          log("Successfully executed deploy command. Output: "+ stdout + stderr);
         }
         // Done - yield the lock
         exec_lock = false;
