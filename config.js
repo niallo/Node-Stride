@@ -12,7 +12,10 @@ exports.deploy_cmd = "cd deploy ; fab deploy";
 
 // Loggly config (optional)
 exports.loggly = {
+  enabled: false,
   subdomain: "your-subdomain",
+  // set input to false if you don't want to use one
+  input: "node-stride",
   auth: {
     username: "your-username",
     password: "your-password"

@@ -7,11 +7,26 @@ var express = require('express')
   , exec = require('child_process').exec
   , config = require('./config')
   , crypto = require('crypto')
+  , loggly = require('loggly')
   ;
 
 // Configuration
 
 app = module.exports = express.createServer();
+
+// Loggly
+var loggly;
+
+if (config.loggly.enabled === true) {
+  console.log("Loggly enabled - creating client");
+  loggly = loggly.createClient(config.loggly);
+  if (config.loggly.input !== false) {
+    loggly.getInput(config.loggly.input, function(err, input) {
+      if (err) throw err;
+      loggly = input;
+    });
+  }
+}
 
 // Custom middleware to save unparsed POST request body to req.post_body
 bodySetter = function(req, res, next) {
@@ -87,6 +102,12 @@ app.configure('production', function(){
   app.use(express.errorHandler());
 });
 
+function log(/*var args*/) {
+    console.log(arguments);
+    if (loggly !== undefined) {
+      loggly.log(arguments);
+    }
+}
 
 // handlers
 
@@ -103,20 +124,20 @@ app.post(config.path, function(req, res) {
   console.log("Received a webhook");
   verify_webhook_req(req, function(webhook_ok) {
     if (!webhook_ok) {
-      console.log("Bad webhook signature");
+      log("Bad webhook signature");
       res.statusCode = 400;
       res.end("Bad signature");
       return;
     }
-    console.log("Good webhook signature. Launching command.");
+    log("Good webhook signature. Launching command `%s`.", config.deploy_cmd);
     if (!exec_lock) {
       // Take the lock
       exec_lock = true;
       exec(config.deploy_cmd, function(error, stdout, stderr) {
         if (error !== null) {
-          console.log("Error executing deploy command `%s`: %s", config.deploy_cmd, error);
+          log("Error executing deploy command `%s`: %s", config.deploy_cmd, error);
         } else {
-          console.log(stdout + stderr);
+          log("Successfully executed deploy command. Output: %s", stdout + stderr);
         }
         // Done - yield the lock
         exec_lock = false;
@@ -126,6 +147,5 @@ app.post(config.path, function(req, res) {
     res.end();
   });
 });
-
 app.listen(config.server_port);
 console.log("Node Stride server listening on port %d in %s mode", app.address().port, app.settings.env);
