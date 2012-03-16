@@ -9,3 +9,12 @@ exports.path = '/deploy-webhook';
 
 // The shell command to launch the deploy.
 exports.deploy_cmd = "cd deploy ; fab deploy";
+
+// Loggly config (optional)
+exports.loggly = {
+  subdomain: "your-subdomain",
+  auth: {
+    username: "your-username",
+    password: "your-password"
+  }
+};
