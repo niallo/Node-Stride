@@ -85,7 +85,19 @@ function verify_webhook_req(req, callback)
 
   var payload = JSON.parse(req.body.payload);
 
-  callback(verify_webhook_sig(sig, config.webhook_secret, req.post_body));
+  if (!verify_webhook_sig(sig, config.webhook_secret, req.post_body)) {
+    return callback(false);
+  }
+
+  if (payload.test_results === undefined) {
+    return callback(false);
+  }
+
+  if (payload.test_results.test_exitcode != 0) {
+    return callback(false);
+  }
+
+  callback(true);
 }
 
 
