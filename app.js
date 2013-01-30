@@ -118,7 +118,7 @@ app.configure('production', function(){
 
 function log(msg) {
   console.log(msg);
-  if (loggly !== undefined) {
+  if (loggly !== undefined && loggly.log) {
     loggly.log(msg);
   }
 }
