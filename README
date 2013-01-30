@@ -4,16 +4,13 @@ It enables easy integration of custom deploy logic into your CD pipeline. We
 use this to continuously deploy Strider itself on IaaS.
 
 
-
-==========
-INSTALLING
+Installing
 ==========
 
-Simply run `npm install -d` to fetch and install dependencies.
+Simply run `npm install` to fetch and install dependencies.
 
 
-=============
-CONFIGURATION
+Configuration
 =============
 
 You will certainly wish to change most if not all configuration parameters in config.js:
@@ -28,8 +25,7 @@ You will certainly wish to change most if not all configuration parameters in co
 We use Fabric, so we execute `fab deploy` to power ours.
 
 
-=====
-USAGE
+Usage
 =====
 
 Deploy Node-Stride as you would any Node.JS / Express application. We recommend setting NODE_ENV=production:
